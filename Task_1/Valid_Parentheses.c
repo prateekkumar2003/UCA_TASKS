@@ -1,62 +1,52 @@
+typedef struct {
+    char* arr;
+    int top;
+} Stack;
 
-struct Node {
-    char data;
-    struct Node* next;
-};
-
-struct Stack {
-    struct Node* top;
-};
-
-void push(struct Stack* stack, char data) {
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->data = data;
-    newNode->next = stack->top;
-    stack->top = newNode;
+void createStack(Stack* stack, int size) {
+    stack->arr = (char*)malloc(size * sizeof(char));
+    stack->top = 0;
 }
 
-char pop(struct Stack* stack) {
-    if (stack->top == NULL) {
-        return '\0'; // Empty stack
+int isEmpty(Stack* stack) {
+    return stack->top == 0;
+}
+
+void push(Stack* stack, char ele) {
+    stack->arr[stack->top] = ele;
+    stack->top++;
+}
+
+char peek(Stack* stack) {
+    if (isEmpty(stack)) {
+        return '\0'; 
     }
-    char data = stack->top->data;
-    struct Node* temp = stack->top;
-    stack->top = stack->top->next;
-    free(temp);
-    return data;
+    return stack->arr[stack->top - 1];
 }
 
 bool isValid(char* s) {
-    struct Stack stack;
-    stack.top = NULL;
-    int idx = 0;
-
-    // If the string is empty, return true...
-    if (s[0] == '\0') {
-        return true;
-    }
-
-    // Create a loop to check parentheses...
-    while (s[idx] != '\0') {
-        // If it contains the below parentheses, push the char to stack...
-        if (s[idx] == '(' || s[idx] == '[' || s[idx] == '{') {
-            push(&stack, s[idx]);
-        }
-        // If the current char is a closing brace provided, pop the top element...
-        // Stack is not empty...
-        else if ((s[idx] == ')' && stack.top != NULL && stack.top->data == '(') ||
-                 (s[idx] == '}' && stack.top != NULL && stack.top->data == '{') ||
-                 (s[idx] == ']' && stack.top != NULL && stack.top->data == '[')) {
-            pop(&stack);
+    int n = strlen(s);
+    Stack* st = (Stack*)malloc(sizeof(Stack));
+    createStack(st, n);
+    
+    for (int i = 0; i < n; i++) {
+        char ch = s[i];
+        if (ch == '(' || ch == '[' || ch == '{') {
+            push(st, ch);
         } else {
-            return false; // If the string is not a valid parenthesis...
+            char top = peek(st);
+            if ((top == '(' && ch == ')') || (top == '[' && ch == ']') || (top == '{' && ch == '}')) {
+                st->top--; 
+            } else {
+                free(st->arr);
+                free(st);
+                return false;
+            }
         }
-        idx++; // Increase the index...
     }
 
-    // If stack.top is NULL, return true...
-    if (stack.top == NULL) {
-        return true;
-    }
-    return false;
+    bool result = isEmpty(st);
+    free(st->arr);
+    free(st);
+    return result;
 }
